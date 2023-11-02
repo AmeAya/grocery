@@ -1,16 +1,29 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
+from django.http import HttpResponse
 from .models import *
 
 
 def homeView(request):
-    return render(request=request, template_name='home.html')
+    if 'cart' in request.session.keys():
+        context = {
+            'categories': Category.objects.all(),
+            'cart': request.session['cart']
+        }
+    else:
+        context = {
+            'categories': Category.objects.all()
+        }
+    return render(request=request, template_name='home.html', context=context)
 
 
 def signInView(request):
     if request.method == 'GET':
-        return render(request=request, template_name='sign_in.html')
+        context = {
+            'categories': Category.objects.all()
+        }
+        return render(request=request, template_name='sign_in.html', context=context)
     elif request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
@@ -22,14 +35,18 @@ def signInView(request):
             return redirect('home_url')
         context = {
             'error': 'Не верный логин и/или пароль',
-            'email': email
+            'email': email,
+            'categories': Category.objects.all()
         }
         return render(request=request, template_name='sign_in.html', context=context)
 
 
 def signUpView(request):
     if request.method == 'GET':
-        return render(request=request, template_name='sign_up.html')
+        context = {
+            'categories': Category.objects.all()
+        }
+        return render(request=request, template_name='sign_up.html', context=context)
     elif request.method == 'POST':
         email = request.POST.get('email')
         first_name = request.POST.get('first_name')
@@ -57,7 +74,8 @@ def signUpView(request):
                 'first_name': first_name,
                 'last_name': last_name,
                 'phone': phone,
-                'birth_date': birth_date
+                'birth_date': birth_date,
+                'categories': Category.objects.all()
             }
             return render(request=request, template_name='sign_up.html', context=context)
 
@@ -65,3 +83,24 @@ def signUpView(request):
 def signOutView(request):
     logout(request)  # Встроенная функция, которая выкидывает из системы юзера(Видит юзера по request.user)
     return redirect('home_url')  # Перенаправляем по url 'home_url'
+
+
+def productsView(request):
+    context = {
+        'products': Product.objects.all()
+    }
+    return render(request=request, template_name='products.html', context=context)
+
+
+def addToCartView(request, product_id):
+    # for key, value in request.session.items():
+    #     print(key, value)
+    if 'cart' not in request.session.keys():
+        request.session['cart'] = [product_id]
+    else:
+        request.session['cart'].append(product_id)
+        request.session.modified = True
+    # request.session.pop('cart')
+    # for key, value in request.session.items():
+    #     print(key, value)
+    return HttpResponse()
