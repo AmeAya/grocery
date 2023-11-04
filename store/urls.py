@@ -9,4 +9,7 @@ urlpatterns = [
     path('sign_out', signOutView, name='sign_out_url'),
     path('products', productsView, name='products_url'),
     path('add_to_cart/<int:product_id>', addToCartView, name='add_cart_url'),
+    path('cart_detail', cartDetailView, name='cart_detail_url'),
+    path('profile', profileView, name='profile_url'),
+    path('products/<int:category_id>', productsByCategoryView, name='products_by_category_url'),
 ]

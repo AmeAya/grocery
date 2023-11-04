@@ -87,20 +87,78 @@ def signOutView(request):
 
 def productsView(request):
     context = {
-        'products': Product.objects.all()
+        'categories': Category.objects.all(),
+        'products': Product.objects.all(),
+        'category': 'All Products'
     }
     return render(request=request, template_name='products.html', context=context)
 
 
 def addToCartView(request, product_id):
-    # for key, value in request.session.items():
-    #     print(key, value)
     if 'cart' not in request.session.keys():
         request.session['cart'] = [product_id]
     else:
         request.session['cart'].append(product_id)
         request.session.modified = True
-    # request.session.pop('cart')
-    # for key, value in request.session.items():
-    #     print(key, value)
     return HttpResponse()
+
+
+def cartDetailView(request):
+    if request.method == 'GET':
+        context = {
+            'categories': Category.objects.all(),
+        }
+        total = 0
+        if 'cart' in request.session.keys():
+            context['cart'] = []
+            count = 1
+            for product_id in request.session['cart']:
+                product = Product.objects.get(id=product_id)
+                product.count = count  # Создаем у объекта новый атрибут, его не будет в бд, только на этот вью
+                context['cart'].append(product)
+                count += 1
+                total += product.price
+        context['total'] = total
+        return render(request=request, template_name='cart.html', context=context)
+    elif request.method == 'POST':
+        total = int(request.POST.get('total'))
+        if request.user.wallet >= total:
+            request.user.wallet -= total
+            request.user.save()
+            request.session.pop('cart')
+            return redirect('profile_url')
+        else:
+            context = {
+                'categories': Category.objects.all(),
+                'error': 'Balance on you Wallet is not enough!'
+            }
+            if 'cart' in request.session.keys():
+                context['cart'] = []
+                count = 1
+                for product_id in request.session['cart']:
+                    product = Product.objects.get(id=product_id)
+                    product.count = count  # Создаем у объекта новый атрибут, его не будет в бд, только на этот вью
+                    context['cart'].append(product)
+                    count += 1
+                context['total'] = total
+            return render(request=request, template_name='cart.html', context=context)
+
+
+def profileView(request):
+    if request.user.is_authenticated:
+        context = {
+            'categories': Category.objects.all(),
+        }
+        return render(request=request, template_name='profile.html', context=context)
+    return redirect('sign_in_url')
+
+
+def productsByCategoryView(request, category_id):
+    category = Category.objects.get(id=category_id)
+    products = Product.objects.filter(category=category)
+    context = {
+        'categories': Category.objects.all(),
+        'products': products,
+        'category': category.name
+    }
+    return render(request=request, template_name='products.html', context=context)

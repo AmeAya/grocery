@@ -15,10 +15,10 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{% url 'products_url' %}">Products</a>
+                        <a class="nav-link" aria-current="page" href="{% url 'products_url' %}">Products</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
+                        <a class="nav-link" href="{% url 'cart_detail_url' %}">Cart</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -26,7 +26,11 @@
                         </a>
                         <ul class="dropdown-menu">
                             {% for category in categories %}
-                                <li><a class="dropdown-item" href="#">{{ category.name }}</a></li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'products_by_category_url' category.id %}">
+                                        {{ category.name }}
+                                    </a>
+                                </li>
                             {% endfor %}
                         </ul>
                     </li>
@@ -35,7 +39,7 @@
             <ul class="navbar-nav mb-2 mb-lg-0">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="">Profile</a>
+                        <a class="nav-link active" aria-current="page" href="{% url 'profile_url' %}">Profile</a>
                     </li>
                     <li>
                         <form class="d-flex" role="search">
